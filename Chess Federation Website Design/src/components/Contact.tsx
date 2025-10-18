@@ -5,8 +5,10 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
+import { useData } from '../contexts/DataContext';
 
 export default function Contact() {
+  const { settings } = useData();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,19 +20,19 @@ export default function Contact() {
     {
       icon: <MapPin className="w-6 h-6" />,
       title: 'Office Location',
-      content: 'ACP Hall, Dinajpur Town',
+      content: settings.contact.address,
       color: 'from-red-500 to-red-600',
     },
     {
       icon: <Mail className="w-6 h-6" />,
       title: 'Email Address',
-      content: 'info@acpdinajpur.org',
+      content: settings.contact.email,
       color: 'from-blue-500 to-blue-600',
     },
     {
       icon: <Phone className="w-6 h-6" />,
       title: 'Hotline',
-      content: '+880 1XXX-XXXXXX',
+      content: settings.contact.phone,
       color: 'from-green-500 to-green-600',
     },
   ];

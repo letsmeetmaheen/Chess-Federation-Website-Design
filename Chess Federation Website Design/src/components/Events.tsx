@@ -2,74 +2,55 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, MapPin, Users, Clock, Trophy, Facebook } from 'lucide-react';
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-
-interface Event {
-  id: number;
-  title: string;
-  category: string;
-  date: string;
-  location: string;
-  participants: number;
-  image: string;
-  countdown: { days: number; hours: number; minutes: number };
-}
+import { useData, Tournament } from '../contexts/DataContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { toast } from 'sonner@2.0.3';
 
 export default function Events() {
+  const { tournaments, addRegistration } = useData();
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Tournament | null>(null);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    playerName: '',
+    email: '',
+    phone: '',
+    category: '',
+    rating: '',
+  });
 
   const categories = ['All', 'Blitz', 'Rapid', 'Classical'];
   
-  const events: Event[] = [
-    {
-      id: 1,
-      title: 'Dinajpur District Championship 2025',
-      category: 'Classical',
-      date: 'November 15, 2025',
-      location: 'Dinajpur Town Hall',
-      participants: 128,
-      image: 'https://images.unsplash.com/photo-1687862528147-0ecb1aa4b81d?w=800',
-      countdown: { days: 214, hours: 12, minutes: 45 },
-    },
-    {
-      id: 2,
-      title: 'Friday Night Blitz Tournament',
-      category: 'Blitz',
-      date: 'October 25, 2025',
-      location: 'ACP Hall',
-      participants: 64,
-      image: 'https://images.unsplash.com/photo-1741790009218-d0cc7440a3c2?w=800',
-      countdown: { days: 10, hours: 18, minutes: 30 },
-    },
-    {
-      id: 3,
-      title: 'Inter-School Rapid Chess',
-      category: 'Rapid',
-      date: 'November 5, 2025',
-      location: 'Dinajpur Collegiate School',
-      participants: 96,
-      image: 'https://images.unsplash.com/photo-1517921150947-b52dd0a87619?w=800',
-      countdown: { days: 21, hours: 8, minutes: 15 },
-    },
-    {
-      id: 4,
-      title: 'Women\'s Chess Championship',
-      category: 'Rapid',
-      date: 'December 1, 2025',
-      location: 'ACP Hall',
-      participants: 48,
-      image: 'https://images.unsplash.com/photo-1721641809341-bfc9706039cf?w=800',
-      countdown: { days: 47, hours: 14, minutes: 20 },
-    },
-  ];
+  // Filter only upcoming tournaments for public display
+  const events = tournaments.filter(t => t.status === 'upcoming');
 
   const filteredEvents = selectedCategory === 'All' 
     ? events 
     : events.filter(e => e.category === selectedCategory);
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEvent) return;
+
+    addRegistration({
+      tournamentId: selectedEvent.id,
+      tournamentTitle: selectedEvent.title,
+      playerName: formData.playerName,
+      email: formData.email,
+      phone: formData.phone,
+      category: formData.category,
+      rating: formData.rating,
+    });
+
+    toast.success('Registration submitted! Awaiting admin approval.');
+    setRegistrationOpen(false);
+    setFormData({ playerName: '', email: '', phone: '', category: '', rating: '' });
+    setSelectedEvent(null);
+  };
 
   return (
     <section id="events" className="py-20 bg-white dark:bg-gray-900 relative overflow-hidden">
@@ -199,7 +180,11 @@ export default function Events() {
                     </div>
 
                     {/* Register Button */}
-                    <Dialog>
+                    <Dialog open={registrationOpen && selectedEvent?.id === event.id} onOpenChange={(open) => {
+                      setRegistrationOpen(open);
+                      if (open) setSelectedEvent(event);
+                      else setSelectedEvent(null);
+                    }}>
                       <DialogTrigger asChild>
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="elastic-bounce">
                           <Button className="w-full bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 hover:from-purple-700 hover:via-blue-700 hover:to-purple-700 text-white py-6 royal-glow">
@@ -208,31 +193,76 @@ export default function Events() {
                           </Button>
                         </motion.div>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="glass-royal dark:glass-royal border-purple-500/30">
                         <DialogHeader>
-                          <DialogTitle>Register for {event.title}</DialogTitle>
+                          <DialogTitle className="dark:text-white">Register for {event.title}</DialogTitle>
+                          <DialogDescription className="dark:text-gray-400">
+                            Fill out the form below to register for this tournament. Admin approval required.
+                          </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4 py-4">
+                        <form onSubmit={handleRegister} className="space-y-4 py-4">
                           <div>
-                            <Label htmlFor="name">Full Name</Label>
-                            <Input id="name" placeholder="Enter your name" />
+                            <Label htmlFor="name" className="dark:text-gray-300">Full Name</Label>
+                            <Input 
+                              id="name" 
+                              value={formData.playerName}
+                              onChange={(e) => setFormData({...formData, playerName: e.target.value})}
+                              placeholder="Enter your name" 
+                              className="dark:bg-white/5 dark:border-purple-500/30 dark:text-white"
+                              required
+                            />
                           </div>
                           <div>
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" placeholder="Enter your email" />
+                            <Label htmlFor="email" className="dark:text-gray-300">Email</Label>
+                            <Input 
+                              id="email" 
+                              type="email" 
+                              value={formData.email}
+                              onChange={(e) => setFormData({...formData, email: e.target.value})}
+                              placeholder="Enter your email" 
+                              className="dark:bg-white/5 dark:border-purple-500/30 dark:text-white"
+                              required
+                            />
                           </div>
                           <div>
-                            <Label htmlFor="phone">Phone Number</Label>
-                            <Input id="phone" placeholder="Enter your phone" />
+                            <Label htmlFor="phone" className="dark:text-gray-300">Phone Number</Label>
+                            <Input 
+                              id="phone" 
+                              value={formData.phone}
+                              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                              placeholder="+880 1XXX-XXXXXX" 
+                              className="dark:bg-white/5 dark:border-purple-500/30 dark:text-white"
+                              required
+                            />
                           </div>
                           <div>
-                            <Label htmlFor="rating">Chess Rating (if any)</Label>
-                            <Input id="rating" placeholder="Enter your rating" />
+                            <Label htmlFor="category" className="dark:text-gray-300">Player Category</Label>
+                            <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})} required>
+                              <SelectTrigger className="dark:bg-white/5 dark:border-purple-500/30 dark:text-white">
+                                <SelectValue placeholder="Select category" />
+                              </SelectTrigger>
+                              <SelectContent className="glass-royal border-purple-500/30">
+                                <SelectItem value="Open">Open</SelectItem>
+                                <SelectItem value="Women">Women</SelectItem>
+                                <SelectItem value="Junior">Junior (U-18)</SelectItem>
+                                <SelectItem value="Senior">Senior (50+)</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                          <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 royal-glow">
+                          <div>
+                            <Label htmlFor="rating" className="dark:text-gray-300">Chess Rating (Optional)</Label>
+                            <Input 
+                              id="rating" 
+                              value={formData.rating}
+                              onChange={(e) => setFormData({...formData, rating: e.target.value})}
+                              placeholder="e.g., 1800" 
+                              className="dark:bg-white/5 dark:border-purple-500/30 dark:text-white"
+                            />
+                          </div>
+                          <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 royal-glow">
                             Complete Registration
                           </Button>
-                        </div>
+                        </form>
                       </DialogContent>
                     </Dialog>
                   </div>

@@ -2,19 +2,20 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ZoomIn } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useData } from '../contexts/DataContext';
 
 export default function Gallery() {
+  const { galleryItems: allItems } = useData();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const galleryImages = [
-    { url: 'https://images.unsplash.com/photo-1687862528147-0ecb1aa4b81d?w=800', title: 'District Championship 2024', span: 'md:col-span-2 md:row-span-2' },
-    { url: 'https://images.unsplash.com/photo-1741790009218-d0cc7440a3c2?w=600', title: 'Young Champions', span: '' },
-    { url: 'https://images.unsplash.com/photo-1517921150947-b52dd0a87619?w=600', title: 'Strategy in Action', span: '' },
-    { url: 'https://images.unsplash.com/photo-1721641809341-bfc9706039cf?w=600', title: 'Women\'s Tournament', span: 'md:col-span-2' },
-    { url: 'https://images.unsplash.com/photo-1758551038941-a67e29026bff?w=600', title: 'Prize Distribution', span: '' },
-    { url: 'https://images.unsplash.com/photo-1687862528147-0ecb1aa4b81d?w=600&sig=2', title: 'Training Session', span: '' },
-    { url: 'https://images.unsplash.com/photo-1741790009218-d0cc7440a3c2?w=600&sig=2', title: 'Opening Ceremony', span: 'md:col-span-2' },
-  ];
+  // Filter only visible items
+  const galleryImages = allItems
+    .filter(item => item.visible)
+    .map((item, index) => ({
+      url: item.url,
+      title: item.title,
+      span: index === 0 ? 'md:col-span-2 md:row-span-2' : index % 3 === 0 ? 'md:col-span-2' : '',
+    }));
 
   const timeline = [
     { year: '2024', event: 'Dinajpur District Championship - Record 200+ participants' },

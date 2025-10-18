@@ -1,8 +1,13 @@
 import { motion } from 'motion/react';
 import { Crown, Sparkles, Trophy, Users } from 'lucide-react';
 import { Button } from './ui/button';
+import { useData } from '../contexts/DataContext';
 
 export default function Hero() {
+  const { announcements } = useData();
+  
+  // Get pinned announcements for the news ribbon
+  const newsItems = announcements.filter(a => a.pinned && a.status === 'active');
   // Floating chess pieces animation
   const floatingVariants = {
     animate: {
@@ -72,9 +77,19 @@ export default function Hero() {
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
           className="whitespace-nowrap"
         >
-          <span className="mx-8">🏆 New Tournament Registration Opens Soon!</span>
-          <span className="mx-8">📢 Join Our Facebook Blitz Connect</span>
-          <span className="mx-8">👑 Become a Registered Member Today</span>
+          {newsItems.length > 0 ? (
+            newsItems.map((item, index) => (
+              <span key={item.id} className="mx-8">
+                {index === 0 ? '🏆' : index === 1 ? '📢' : '👑'} {item.title}
+              </span>
+            ))
+          ) : (
+            <>
+              <span className="mx-8">🏆 Welcome to ACP Bangladesh - Dinajpur Branch</span>
+              <span className="mx-8">📢 Chess Federation of Dinajpur District</span>
+              <span className="mx-8">👑 Where Every Move Shapes a Champion</span>
+            </>
+          )}
         </motion.div>
       </motion.div>
 

@@ -2,29 +2,14 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Trophy, Crown, Medal, TrendingUp } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-
-interface Player {
-  rank: number;
-  name: string;
-  rating: number;
-  category: string;
-  trend: 'up' | 'down' | 'stable';
-  image: string;
-}
+import { useData } from '../contexts/DataContext';
 
 export default function Rankings() {
+  const { players: allPlayers } = useData();
   const [sortBy, setSortBy] = useState<'rating' | 'name'>('rating');
 
-  const players: Player[] = [
-    { rank: 1, name: 'Rakibul Islam', rating: 2145, category: 'Open', trend: 'up', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200' },
-    { rank: 2, name: 'Farzana Ahmed', rating: 2098, category: 'Women', trend: 'stable', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200' },
-    { rank: 3, name: 'Shahidul Haque', rating: 2076, category: 'Open', trend: 'up', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200' },
-    { rank: 4, name: 'Nasrin Sultana', rating: 2054, category: 'Women', trend: 'down', image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200' },
-    { rank: 5, name: 'Aminul Islam', rating: 2023, category: 'Open', trend: 'up', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200' },
-    { rank: 6, name: 'Tahmina Akter', rating: 1998, category: 'Women', trend: 'stable', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200' },
-    { rank: 7, name: 'Kamal Hossain', rating: 1976, category: 'Open', trend: 'up', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200' },
-    { rank: 8, name: 'Salma Begum', rating: 1954, category: 'Women', trend: 'down', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200' },
-  ];
+  // Sort players by rank
+  const players = [...allPlayers].sort((a, b) => a.rank - b.rank);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {

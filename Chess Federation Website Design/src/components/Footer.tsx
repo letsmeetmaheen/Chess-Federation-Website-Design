@@ -1,7 +1,9 @@
 import { motion } from 'motion/react';
 import { Crown, Facebook, Youtube, Mail, Phone, MapPin, ArrowUp } from 'lucide-react';
+import { useData } from '../contexts/DataContext';
 
 export default function Footer() {
+  const { settings } = useData();
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -81,15 +83,15 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-gray-400">
                 <MapPin className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-                <span>ACP Hall, Dinajpur Town, Bangladesh</span>
+                <span>{settings.contact.address}</span>
               </div>
               <div className="flex items-center gap-3 text-gray-400">
                 <Mail className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                <span>info@acpdinajpur.org</span>
+                <span>{settings.contact.email}</span>
               </div>
               <div className="flex items-center gap-3 text-gray-400">
                 <Phone className="w-5 h-5 text-amber-500 dark:text-amber-400" />
-                <span>+880 1XXX-XXXXXX</span>
+                <span>{settings.contact.phone}</span>
               </div>
             </div>
           </motion.div>

@@ -2,15 +2,17 @@ import { motion, useInView } from 'motion/react';
 import { useRef } from 'react';
 import { Crown, Shield, Users, Briefcase, Megaphone, Building } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useData } from '../contexts/DataContext';
 
 interface MemberProps {
   name: string;
   title: string;
+  photo?: string;
   icon: React.ReactNode;
   delay: number;
 }
 
-function MemberCard({ name, title, icon, delay }: MemberProps) {
+function MemberCard({ name, title, photo, icon, delay }: MemberProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -22,11 +24,17 @@ function MemberCard({ name, title, icon, delay }: MemberProps) {
       <div className="relative glass-royal rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl gel-transition royal-glow">
         {/* Photo Placeholder */}
         <div className="relative h-64 bg-gradient-to-br from-purple-200 to-blue-300 dark:from-purple-900 dark:to-blue-900 overflow-hidden">
-          <ImageWithFallback
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"
-            alt={name}
-            className="w-full h-full object-cover group-hover:scale-110 gel-transition"
-          />
+          {photo ? (
+            <ImageWithFallback
+              src={photo}
+              alt={name}
+              className="w-full h-full object-cover group-hover:scale-110 gel-transition"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-6xl text-white">
+              {name.charAt(0)}
+            </div>
+          )}
           
           {/* Overlay on Hover */}
           <motion.div
@@ -79,26 +87,16 @@ function MemberCard({ name, title, icon, delay }: MemberProps) {
 export default function Committee() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
+  const { committeeMembers } = useData();
 
-  const members = [
-    { name: 'মোঃ আরিফ আখতার', title: 'সভাপতি', icon: <Crown className="w-6 h-6 text-white" /> },
-    { name: 'মোঃ নাদিম', title: 'সহ-সভাপতি (১)', icon: <Shield className="w-6 h-6 text-white" /> },
-    { name: 'আলী হাসান আহম্মেদ', title: 'সহ-সভাপতি (২)', icon: <Shield className="w-6 h-6 text-white" /> },
-    { name: 'মোঃ আকমল হোসেন', title: 'সাধারণ সম্পাদক', icon: <Briefcase className="w-6 h-6 text-white" /> },
-    { name: 'সাইফুল আলম রেজা', title: 'যুগ্ম সম্পাদক (১)', icon: <Briefcase className="w-6 h-6 text-white" /> },
-    { name: 'মোঃ আলী হাসান', title: 'যুগ্ম সম্পাদক (২)', icon: <Briefcase className="w-6 h-6 text-white" /> },
-    { name: 'এ্যাডঃ মীর আব্দুর রাজ্জাক', title: 'সাংগঠনিক সম্পাদক', icon: <Users className="w-6 h-6 text-white" /> },
-    { name: 'ফেরদৌস আহমেদ', title: 'কোষাধ্যক্ষ', icon: <Building className="w-6 h-6 text-white" /> },
-    { name: 'মীর মোক্তার আলী (মুক্তি)', title: 'প্রচার সম্পাদক', icon: <Megaphone className="w-6 h-6 text-white" /> },
-    { name: 'মোস্তাফিজুর রহমান রাজু', title: 'দপ্তর সম্পাদক', icon: <Building className="w-6 h-6 text-white" /> },
-    { name: 'মোঃ শাহ আলম', title: 'সদস্য', icon: <Users className="w-6 h-6 text-white" /> },
-    { name: 'মোঃ লোকমান হোসেন', title: 'সদস্য', icon: <Users className="w-6 h-6 text-white" /> },
-    { name: 'নুরুজ্জামান শাহিন', title: 'সদস্য', icon: <Users className="w-6 h-6 text-white" /> },
-    { name: 'মোঃ নুরুল ইসলাম তৈয়ব', title: 'সদস্য', icon: <Users className="w-6 h-6 text-white" /> },
-    { name: 'মোঃ লেলিন আজাদ', title: 'সদস্য', icon: <Users className="w-6 h-6 text-white" /> },
-    { name: 'মোল্লা শফিক', title: 'সদস্য', icon: <Users className="w-6 h-6 text-white" /> },
-    { name: 'বেলাল হোসেন বাবু', title: 'সদস্য', icon: <Users className="w-6 h-6 text-white" /> },
-  ];
+  const getIconForRole = (title: string) => {
+    if (title.includes('সভাপতি') && !title.includes('সহ')) return <Crown className="w-6 h-6 text-white" />;
+    if (title.includes('সহ-সভাপতি')) return <Shield className="w-6 h-6 text-white" />;
+    if (title.includes('সম্পাদক')) return <Briefcase className="w-6 h-6 text-white" />;
+    if (title.includes('কোষাধ্যক্ষ')) return <Building className="w-6 h-6 text-white" />;
+    if (title.includes('প্রচার')) return <Megaphone className="w-6 h-6 text-white" />;
+    return <Users className="w-6 h-6 text-white" />;
+  };
 
   return (
     <section ref={ref} className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 relative overflow-hidden">
@@ -130,8 +128,15 @@ export default function Committee() {
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {members.map((member, index) => (
-            <MemberCard key={index} {...member} delay={index * 0.05} />
+          {committeeMembers.map((member, index) => (
+            <MemberCard 
+              key={member.id} 
+              name={member.name}
+              title={member.title}
+              photo={member.photo}
+              icon={getIconForRole(member.title)}
+              delay={index * 0.05} 
+            />
           ))}
         </div>
       </div>
